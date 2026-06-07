@@ -117,14 +117,14 @@ class App < Roda
 
     # --- JUNCTION 3: Continuous Intelligent Chat Interaction Loop ---
     r.get "voice/tts/ne" do
-      halt(404, '') if NEPALI_TTS.nil?
+      r.halt(404, '') if NEPALI_TTS.nil?
 
       tts_id = r.params['id'].to_s
       tts_text = App.consume_tts_text(tts_id)
-      halt(404, '') if tts_text.nil? || tts_text.strip.empty?
+      r.halt(404, '') if tts_text.nil? || tts_text.strip.empty?
 
       audio_mp3 = NEPALI_TTS.synthesize(text: tts_text)
-      halt(502, '') if audio_mp3.nil? || audio_mp3.empty?
+      r.halt(502, '') if audio_mp3.nil? || audio_mp3.empty?
 
       response['Content-Type'] = 'audio/mpeg'
       response['Cache-Control'] = 'no-store'
