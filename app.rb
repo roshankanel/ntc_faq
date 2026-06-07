@@ -2,7 +2,7 @@
 require 'roda'
 
 # Load architecture folders cleanly at startup
-require_relative 'models/faq_repository'
+require_relative 'models/faq'
 require_relative 'services/groq_service'
 require_relative 'view_models/voice_chat_processor'
 
@@ -22,7 +22,7 @@ class App < Roda
   
   # 2. Instantiate interchangeable strategy client and inject into ViewModel layer
   ai_client   = GroqService.new(api_key)
-  repository  = FaqRepository.new('ntc_faq.text')
+  repository  = Faq.new('ntc_faq.text')
   VIEW_MODEL  = VoiceChatProcessor.new(ai_client, repository)
 
   # Standard language code tracking tags supported natively across telephone networks
