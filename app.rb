@@ -68,11 +68,12 @@ class App < Roda
     end
 
     # --- JUNCTION 3: Continuous Voice Chat ---
+       # --- JUNCTION 3: Continuous Voice Chat ---
     r.is "voice/chat" do
       current_lang = r.params['lang'] || 'en'
       customer_speech = r.params['SpeechResult']
 
-      # Query our decoupled view-model architecture layer
+      # Query our view-model architecture layer
       reply_text = VIEW_MODEL.generate_response(customer_speech, current_lang)
 
       <<~XML
@@ -84,7 +85,7 @@ class App < Roda
               nepali_audio_url = "https://google.com{encoded_reply}"
               "<Play>#{nepali_audio_url}</Play>"
             else
-              # FIX: Use clean text-to-speech for crisp English voice output responses
+              # Clean text-to-speech delivery with zero audio streaming wrapping errors
               "<Say voice=\"Polly.Joanna-Neural\">#{reply_text}</Say>"
             end
           }
@@ -100,6 +101,7 @@ class App < Roda
         </Response>
       XML
     end
+
 
   end
 end

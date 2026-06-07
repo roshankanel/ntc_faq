@@ -10,27 +10,26 @@ class GroqService < BaseAiService
   end
 
   def execute_chat(system_prompt, question, context)
+    # Ensure variables are treated as flat text lines to prevent header corruption
+    clean_question = question.to_s.gsub(/[^[:print:]\s]/, '').strip
+    
     uri = URI.parse("https://groq.com")
     
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-    
-    # Standard server-to-server optimization parameters
     http.keep_alive_timeout = 30
     http.max_retries = 0
 
-    # ---- FIX: Use clean standard API headers without any fake browser masks ----
     request = Net::HTTP::Post.new(uri)
     request["Authorization"] = "Bearer #{@api_key}"
     request["Content-Type"] = "application/json"
     request["Accept"] = "application/json"
-    # -----------------------------------------------------------------------------
 
     request.body = {
       model: "llama3-8b-8192", 
       messages: [
         { role: "system", content: system_prompt },
-        { role: "user", content: "FAQ Context: #{context}\n\nQuestion: #{question}" }
+        { role: "user", content: "FAQ Context: #{context}\n\nQuestion: #{clean_question}" }
       ],
       max_tokens: 150,
       temperature: 0.3
@@ -38,20 +37,21 @@ class GroqService < BaseAiService
 
     response = http.request(request)
     
-    # Safety Check: If the server returns nothing or crashes, catch it before parsing
-    if response.body.nil? || response.body.strip.empty?
-      return "I am sorry, the network channel dropped. Please try again."
+    # Safety Check: If the server returns a blank body or hits an internal error, catch it
+    if response.body.nil? || response.body.strip.empty? || response.body.start_with?("<!DOCTYPE html", "<html")
+      return "I am sorry, the assistant network pipeline is resetting. Please ask again."
     end
 
     result = JSON.parse(response.body)
     
-    # Extract the beautiful text response or handle validation faults
     if result["error"]
-      "System Error: #{result['error']['message']}"
+      "System configuration notice: #{result['error']['message']}"
     else
-      result.dig("choices", 0, "message", "content") || "I am sorry, my system is currently resetting."
+      # Extract the clean string and strip out any markdown formatting that breaks text-to-speech
+      raw_content = result.dig("choices", 0, "message", "content").to_s
+      raw_content.gsub(/[\*#_`\[\]()]/, '').strip
     end
   rescue StandardError => e
-    "System Error Diagnosed: #{e.message}"
+    "I am sorry, the system encountered an internal query issue."
   end
 end
