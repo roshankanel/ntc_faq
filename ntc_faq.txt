@@ -1,0 +1,61 @@
+====================================================================
+NEPAL TELECOM (NTC) CUSTOMER SUPPORT KNOWLEDGE BASE (EXPANDED)
+====================================================================
+
+--- GENERAL MOBILE SERVICE & SHORTCODES ---
+* Check balance: Dial *400#
+* Find your own mobile number: Dial *9#
+* Check who owns the SIM card (SIM KYC): Dial *922#
+* Check latest data offers and active packages: Dial *1415#
+* Subscribe to special data or voice packages: Dial *1442#
+* Balance transfer instructions: Dial *422*SecurityCode*RecipientMobileNumber*AmountInRs#
+* Get balance transfer security code: SMS the word "SCODE" to 1415
+
+--- POSTPAID EXCLUSIVE & INTERNATIONAL ROAMING ---
+* Balance check for Postpaid numbers: Dial 1415 and listen to the voice guide, or dial *400#.
+* Friends and Family Service (FNF) configuration: Log into the NTC Mobile App or dial the shortcode *1415# and follow the prompts to add preferred close contacts.
+* Activate International Roaming (ISD Calling) via PIN: Dial #331*PIN#, where the default factory PIN code is 0000.
+* Deactivate International Roaming (ISD Calling): Dial *331*PIN#, where the default factory PIN code is 0000.
+* Check status of International Roaming activation: Dial *#331#
+
+--- VOLTE (VOICE OVER LTE) HIGH DEFINITION CALLS ---
+* Requirements for VoLTE: You must have an upgraded smartphone handset, an NTC 4G SIM card, and be located inside a 4G network coverage area.
+* Activating VoLTE on your SIM card profile: Dial *444# and select the option "Activate VoLTE".
+* Activating VoLTE inside Android device settings: Go to Settings -> Mobile Networks -> Turn on the "VoLTE call" switch toggle.
+* Activating VoLTE inside Apple iPhone device settings: Go to Settings -> Cellular -> Cellular Data Options -> Voice & Data -> Select LTE and switch the VoLTE toggle on.
+* Checking VoLTE active status: Check your phone's status bar for an "HD" or "VoLTE" icon, dial *111#, or call the hotline 1444.
+* VoLTE Tariff Cost: VoLTE calls do not charge premium rates; they are charged at normal standard voice minutes.
+
+--- NETWORK FREQUENCY BANDS IN NEPAL ---
+* Rural Network Bands: NTC operates 4G on LTE Band 20 (800 MHz) for wide, far-reaching coverage across less populated or village areas.
+* Urban Network Bands: NTC operates 4G on LTE Band 3 (1800 MHz) inside cities to handle high capacity and many users at once.
+* Mobile Purchase Advisory: When buying a new phone in Nepal, make sure the device supports both LTE Band 3 and LTE Band 20 so your 4G data runs perfectly in both cities and rural areas.
+
+--- CALL MANAGEMENT CODES ---
+* What is Call Waiting: A free features that sounds an audio alert tone if someone else is calling you while you are in the middle of a phone call.
+* Activate Call Waiting: Dial *43# (or look under your phone app's Call Settings menu).
+* Deactivate Call Waiting: Dial #43#
+* Check current Call Waiting status: Dial *#43#
+* Activate Unconditional Call Forwarding (all incoming calls): Dial **21*ForwardingPhoneNumber#
+* Deactivate Unconditional Call Forwarding: Dial ##21#
+* Activate Busy Call Forwarding (only forwards if you are talking to someone else): Dial **67*ForwardingPhoneNumber#
+* Activate No Reply Call Forwarding (forwards if you do not pick up): Dial **61*ForwardingPhoneNumber#
+* Activate Switched Off / Unreachable Call Forwarding: Dial **62*ForwardingPhoneNumber#
+
+--- LANDLINE (PSTN), ADSL, & FTTH FIBER SERVICES ---
+* Check landline PSTN bill amount: Dial the IVR number 1606 and follow instructions, or text "CB*YourLandlineNumber" (e.g., CB*014000000) to 1415.
+* Check landline detailed billing itemization: Visit the official portal site at http://gsmbl.ntc.net.np.
+* Complain about non-working landline or fiber link: Dial 198 to lodge an official maintenance ticket.
+* Telephone directory search lookup: Dial 197 to ask for a specific landline number.
+* Check NTC Fiber FTTH profile validity: SMS "VL*NTFTTHYourLandlineNumber" to 1415.
+* Manage FTTH package data balances: Dial the shortcode *1416#
+* Check traditional ADSL subscription validity: SMS "VL*NTADSLYourLandlineNumber" to 1415.
+* How to subscribe to ADSL: Ensure you have an active NTC PSTN landline, then submit the registration form with a copy of your citizenship certificate to your nearest local NTC exchange office.
+* Troubleshooting ADSL hardware modems: Look at the ADSL LED indicator light on your router. It should blink and then glow continuously solid green. If the light remains unlit or blinks forever, contact your local NTC exchange main frame department.
+
+--- MOBILE APPLICATION SELF-SERVICE REGISTRATION ---
+* Steps for first-time NTC App registration: Download the app from the store, click "Register" at the bottom, type your Name, Email, NTC phone number, Date of Birth, Gender, create a password, accept terms, type the SMS OTP confirmation code sent to your phone, and log in.
+
+--- SIM CARD PIN & PUK MANAGEMENT LOCKS ---
+* Entering wrong PIN profile rules: Entering a wrong SIM PIN code 3 consecutive times immediately locks the card and requires a 10-digit PUK code to bypass.
+* Entering wrong PUK code danger rules: Entering a wrong PUK code 10 consecutive times permanently burns, damages, and disables the SIM card memory chip. You must physically visit an NTC client service desk counter to buy a replacement SIM card.
