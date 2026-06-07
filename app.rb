@@ -25,6 +25,7 @@ class App < Roda
   ai_client = (provider_choice == 'groq') ? GroqService.new(api_key) : OpenaiService.new(api_key)
 
   puts "provider_choice: #{provider_choice}"
+    puts "provider_choice: #{provider_choice} #{provider_choice == 'groq'}"
   puts provider_choice == 'groq' ? "GroqService initialized successfully." : "OpenaiService initialized successfully."  
   puts "AI Client initialized: #{ai_client.class.name}"
 
