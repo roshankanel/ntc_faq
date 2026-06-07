@@ -33,15 +33,25 @@ class App < Roda
   MAX_TTS_CACHE_ENTRIES = 120
   TTS_CACHE = {}
 
-  def self.cache_tts_text(text)
+  def self.cache_tts_audio(audio_mp3)
     id = SecureRandom.hex(12)
-    TTS_CACHE[id] = text.to_s[0, 1500]
+    TTS_CACHE[id] = audio_mp3
     TTS_CACHE.shift while TTS_CACHE.length > MAX_TTS_CACHE_ENTRIES
     id
   end
 
-  def self.consume_tts_text(id)
-    TTS_CACHE.delete(id)
+  def self.fetch_tts_audio(id)
+    TTS_CACHE[id]
+  end
+
+  def self.public_base_url(request)
+    forwarded_proto = request.env['HTTP_X_FORWARDED_PROTO']
+    forwarded_host = request.env['HTTP_X_FORWARDED_HOST']
+
+    proto = forwarded_proto.to_s.empty? ? request.scheme : forwarded_proto
+    host = forwarded_host.to_s.empty? ? request.host : forwarded_host
+
+    "#{proto}://#{host}"
   end
 
   # Twilio telephony configuration.
@@ -96,11 +106,23 @@ class App < Roda
           XML
         end
 
-        welcome_audio_id = App.cache_tts_text(welcome_msg)
+        welcome_audio = NEPALI_TTS.synthesize(text: welcome_msg)
+        if welcome_audio.nil? || welcome_audio.empty?
+          return <<~XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Response>
+              <Say voice="#{VOICE_ACTORS['en']}" language="#{TTS_LANG_CODES['en']}">Nepali voice is temporarily unavailable. Please press 1 for English.</Say>
+              <Redirect>/voice</Redirect>
+            </Response>
+          XML
+        end
+
+        welcome_audio_id = App.cache_tts_audio(welcome_audio)
+        play_url = "#{App.public_base_url(r)}/voice/tts/ne?id=#{welcome_audio_id}"
         return <<~XML
           <?xml version="1.0" encoding="UTF-8"?>
           <Response>
-            <Play>/voice/tts/ne?id=#{welcome_audio_id}</Play>
+            <Play>#{play_url}</Play>
             <Gather input="speech" action="/voice/chat?lang=#{selected_lang}" speechTimeout="auto" language="#{STT_LANG_CODES[selected_lang]}"/>
           </Response>
         XML
@@ -120,10 +142,7 @@ class App < Roda
       r.halt(404, '') if NEPALI_TTS.nil?
 
       tts_id = r.params['id'].to_s
-      tts_text = App.consume_tts_text(tts_id)
-      r.halt(404, '') if tts_text.nil? || tts_text.strip.empty?
-
-      audio_mp3 = NEPALI_TTS.synthesize(text: tts_text)
+      audio_mp3 = App.fetch_tts_audio(tts_id)
       r.halt(502, '') if audio_mp3.nil? || audio_mp3.empty?
 
       response['Content-Type'] = 'audio/mpeg'
@@ -143,15 +162,32 @@ class App < Roda
       follow_up_msg = (current_lang == 'ne') ? "के म तपाईंलाई अरू केही सहयोग गर्न सक्छु?" : "Is there anything else I can help you with?"
 
       if current_lang == 'ne' && !NEPALI_TTS.nil?
-        reply_audio_id = App.cache_tts_text(reply_text)
-        follow_up_audio_id = App.cache_tts_text(follow_up_msg)
+        reply_audio = NEPALI_TTS.synthesize(text: reply_text)
+        follow_up_audio = NEPALI_TTS.synthesize(text: follow_up_msg)
+
+        if reply_audio.nil? || reply_audio.empty? || follow_up_audio.nil? || follow_up_audio.empty?
+          return <<~XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Response>
+              <Say voice="#{VOICE_ACTORS['en']}" language="#{TTS_LANG_CODES['en']}">#{reply_text}</Say>
+              <Gather input="speech" action="/voice/chat?lang=#{current_lang}" speechTimeout="auto" language="#{STT_LANG_CODES[current_lang]}">
+                <Say voice="#{VOICE_ACTORS['en']}" language="#{TTS_LANG_CODES['en']}">#{follow_up_msg}</Say>
+              </Gather>
+            </Response>
+          XML
+        end
+
+        reply_audio_id = App.cache_tts_audio(reply_audio)
+        follow_up_audio_id = App.cache_tts_audio(follow_up_audio)
+        reply_play_url = "#{App.public_base_url(r)}/voice/tts/ne?id=#{reply_audio_id}"
+        follow_up_play_url = "#{App.public_base_url(r)}/voice/tts/ne?id=#{follow_up_audio_id}"
 
         <<~XML
           <?xml version="1.0" encoding="UTF-8"?>
           <Response>
-            <Play>/voice/tts/ne?id=#{reply_audio_id}</Play>
+            <Play>#{reply_play_url}</Play>
             <Gather input="speech" action="/voice/chat?lang=#{current_lang}" speechTimeout="auto" language="#{STT_LANG_CODES[current_lang]}">
-              <Play>/voice/tts/ne?id=#{follow_up_audio_id}</Play>
+              <Play>#{follow_up_play_url}</Play>
             </Gather>
           </Response>
         XML

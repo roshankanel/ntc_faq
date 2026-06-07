@@ -29,7 +29,7 @@ class OpenaiTtsService
       model: ENV.fetch('NEPALI_TTS_MODEL', DEFAULT_MODEL),
       voice: ENV.fetch('NEPALI_TTS_PROVIDER_VOICE', DEFAULT_VOICE),
       input: text,
-      format: 'mp3',
+      response_format: 'mp3',
       instructions: 'Speak naturally in Nepali with clear pronunciation.'
     }.to_json
 
