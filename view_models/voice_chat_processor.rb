@@ -29,8 +29,7 @@ class VoiceChatProcessor
 
     # 2. ---- 📝 SECURE LOG DIARY RECORDING ENTRY ----
     # Save the conversation metrics straight into our chat_history.log file
-    @logger.info("Voice Chat Transaction\n  -> Lang:     #{lang.upcase}\n  -> Question: \"#{customer_speech.strip}\"\n  -> Answer:   \"#{reply_text.strip}\"\n------------------------------------------------")
-    # ------------------------------------------------
+    @logger.info("Voice Chat Transaction\n  -> Lang:     #{lang.upcase}\n  -> Question: \"#{customer_speech.strip}\"\n  -> Answer:   \"#{reply_text.strip}\"\n------------------------------------------------")# ------------------------------------------------
 
     reply_text
   end
