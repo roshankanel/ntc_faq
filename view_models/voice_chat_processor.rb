@@ -47,6 +47,19 @@ class VoiceChatProcessor
     'call' => 'call'
   }.freeze
 
+  NEPALI_FAQ_TRANSLATIONS = {
+    'Check balance: Dial *400#' => 'ब्यालेन्स जाँच गर्न *400# डायल गर्नुहोस्।',
+    'Find your own mobile number: Dial *9#' => 'आफ्नो मोबाइल नम्बर थाहा पाउन *9# डायल गर्नुहोस्।',
+    'Check latest data offers and active packages: Dial *1415#' => 'नयाँ डेटा अफर र सक्रिय प्याकेज जाँच गर्न *1415# डायल गर्नुहोस्।',
+    'Subscribe to special data or voice packages: Dial *1442#' => 'विशेष डेटा वा भ्वाइस प्याकेज लिन *1442# डायल गर्नुहोस्।',
+    'Activating VoLTE on your SIM card profile: Dial *444# and select the option "Activate VoLTE".' => 'VoLTE सक्रिय गर्न *444# डायल गरेर "Activate VoLTE" विकल्प छान्नुहोस्।',
+    'Activate Call Waiting: Dial *43# (or look under your phone app\'s Call Settings menu).' => 'Call Waiting सक्रिय गर्न *43# डायल गर्नुहोस्।',
+    'Deactivate Call Waiting: Dial #43#' => 'Call Waiting बन्द गर्न #43# डायल गर्नुहोस्।',
+    'Check current Call Waiting status: Dial *#43#' => 'Call Waiting को स्थिति जाँच गर्न *#43# डायल गर्नुहोस्।',
+    'Manage FTTH package data balances: Dial the shortcode *1416#' => 'FTTH प्याकेज डेटा ब्यालेन्स जाँच गर्न *1416# डायल गर्नुहोस्।',
+    'Complain about non-working landline or fiber link: Dial 198 to lodge an official maintenance ticket.' => 'ल्याण्डलाइन वा फाइबर समस्या दर्ता गर्न 198 मा फोन गर्नुहोस्।'
+  }.freeze
+
   # ---- SOLID FIX: Place the required parameter BEFORE the optional default values ----
   def initialize(ai_client, repository = Faq.new, log_file = 'chat_history.log')
     @repository = repository
@@ -125,10 +138,21 @@ class VoiceChatProcessor
     end
 
     if lang == 'ne'
-      "AI सेवा अहिले उपलब्ध छैन। FAQ अनुसार: #{best_match}"
+      "AI सेवा अहिले उपलब्ध छैन। FAQ अनुसार: #{localize_faq_entry_nepali(best_match)}"
     else
       "From our FAQ: #{best_match}"
     end
+  end
+
+  def localize_faq_entry_nepali(entry)
+    return NEPALI_FAQ_TRANSLATIONS[entry] if NEPALI_FAQ_TRANSLATIONS.key?(entry)
+
+    normalized = entry.to_s.strip
+    return 'ब्यालेन्स जाँच गर्न *400# डायल गर्नुहोस्।' if normalized.include?('Check balance: Dial *400#')
+    return 'आफ्नो नम्बर हेर्न *9# डायल गर्नुहोस्।' if normalized.include?('Dial *9#')
+    return 'डेटा अफर जाँच गर्न *1415# डायल गर्नुहोस्।' if normalized.include?('Dial *1415#')
+
+    normalized
   end
 
   def best_faq_match(customer_speech, faq_context)
@@ -157,7 +181,7 @@ class VoiceChatProcessor
     raw_tokens = text
       .to_s
       .downcase
-      .scan(/[\p{L}\p{N}#*]+/u)
+      .scan(/[\p{L}\p{M}\p{N}#*]+/u)
 
     normalized = raw_tokens.map { |token| TOKEN_ALIASES.fetch(token, token) }
 
