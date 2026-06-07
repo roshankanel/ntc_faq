@@ -24,8 +24,10 @@ class App < Roda
   # 2. Build our interchangeable AI client strategy block
   ai_client = (provider_choice == 'groq') ? GroqService.new(api_key) : OpenaiService.new(api_key)
 
+  puts "provider_choice: #{provider_choice}"
+  puts provider_choice == 'groq' ? "GroqService initialized successfully." : "OpenaiService initialized successfully."  
   puts "AI Client initialized: #{ai_client.class.name}"
-  
+
   # 3. Inject dependencies into our custom processor layout
   repository  = Faq.new('ntc_faq.text')
   VIEW_MODEL  = VoiceChatProcessor.new(repository, ai_client)
