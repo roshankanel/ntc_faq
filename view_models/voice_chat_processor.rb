@@ -69,7 +69,11 @@ class VoiceChatProcessor
     faq_context = @repository.read_knowledge_base
     system_prompt = build_prompt(lang)
 
-    reply_text = @ai_client.execute_chat(system_prompt, customer_speech, faq_context)
+    reply_text = if @ai_client&.respond_to?(:execute_chat)
+                   @ai_client.execute_chat(system_prompt, customer_speech, faq_context)
+                 else
+                   'System configuration notice: AI client is not configured.'
+                 end
 
     if ai_failure?(reply_text)
       fallback_text = local_faq_fallback(customer_speech, faq_context, lang)

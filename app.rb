@@ -14,19 +14,30 @@ class App < Roda
   api_key = ENV['AI_API_KEY']
 
   if api_key.nil? || api_key.strip.empty?
-    puts "❌ ERROR: No API key provided. Please set the AI_API_KEY environment variable."
-    exit(1)
-  end 
+    puts "⚠️ AI_API_KEY is not set. Running in fallback mode (local FAQ matching only)."
+  end
 
   puts "🚀 Launching framework dynamically linked to Groq Cloud Engine..."
   
   # 2. Instantiate interchangeable strategy client and inject into ViewModel layer
-  ai_client   = GroqService.new(api_key)
+  ai_client   = api_key.to_s.strip.empty? ? nil : GroqService.new(api_key)
   repository  = Faq.new('ntc_faq.txt')
   VIEW_MODEL  = VoiceChatProcessor.new(ai_client, repository)
 
-  # Standard language code tracking tags supported natively across telephone networks
-  LANG_CODES = { 'en' => 'en-US', 'ne' => 'ne-NP' }.freeze
+  # Twilio telephony configuration.
+  # Internal app language stays `ne`; TTS/STT can be tuned via env vars.
+  TTS_LANG_CODES = {
+    'en' => 'en-US',
+    'ne' => ENV.fetch('NEPALI_TTS_LANG', 'en-US')
+  }.freeze
+  STT_LANG_CODES = {
+    'en' => 'en-US',
+    'ne' => ENV.fetch('NEPALI_STT_LANG', 'en-US')
+  }.freeze
+  VOICE_ACTORS = {
+    'en' => 'Polly.Joanna-Neural',
+    'ne' => ENV.fetch('NEPALI_TTS_VOICE', 'Polly.Joanna-Neural')
+  }.freeze
 
   route do |r|
     # Instruct the voice platform network that we are passing standard text XML data blocks
@@ -38,8 +49,8 @@ class App < Roda
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
           <Gather numDigits="1" action="/voice/menu" timeout="5">
-            <Say voice="Polly.Joanna-Neural" language="en-US">Welcome to Nepal Telecom. For English, press 1.</Say>
-            <Say voice="Polly.Madhav-Neural" language="ne-NP">नेपाल टेलिकममा स्वागत छ। नेपालीको लागि दुई थिच्नुहोस्।</Say>
+            <Say voice="#{VOICE_ACTORS['en']}" language="#{TTS_LANG_CODES['en']}">Welcome to Nepal Telecom. For English, press 1.</Say>
+            <Say voice="#{VOICE_ACTORS['ne']}" language="#{TTS_LANG_CODES['ne']}">नेपाल टेलिकममा स्वागत छ। नेपालीको लागि दुई थिच्नुहोस्।</Say>
           </Gather>
           <Redirect>/voice</Redirect>
         </Response>
@@ -52,13 +63,13 @@ class App < Roda
       selected_lang = (digit_pressed == '2') ? 'ne' : 'en'
 
       welcome_msg = (selected_lang == 'ne') ? "धन्यवाद। अब तपाईं नेपालीमा प्रश्न सोध्न सक्नुहुन्छ।" : "Thank you. You can now ask your question in English."
-      voice_actor = (selected_lang == 'ne') ? "Polly.Madhav-Neural" : "Polly.Joanna-Neural"
+      voice_actor = VOICE_ACTORS[selected_lang]
 
       <<~XML
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          <Say voice="#{voice_actor}" language="#{LANG_CODES[selected_lang]}">#{welcome_msg}</Say>
-          <Gather input="speech" action="/voice/chat?lang=#{selected_lang}" speechTimeout="auto" language="#{LANG_CODES[selected_lang]}"/>
+          <Say voice="#{voice_actor}" language="#{TTS_LANG_CODES[selected_lang]}">#{welcome_msg}</Say>
+          <Gather input="speech" action="/voice/chat?lang=#{selected_lang}" speechTimeout="auto" language="#{STT_LANG_CODES[selected_lang]}"/>
         </Response>
       XML
     end
@@ -71,15 +82,15 @@ class App < Roda
       # Query our view-model abstraction architecture layer
       reply_text = VIEW_MODEL.generate_response(customer_speech, current_lang)
       
-      voice_actor   = (current_lang == 'ne') ? "Polly.Madhav-Neural" : "Polly.Joanna-Neural"
+      voice_actor   = VOICE_ACTORS[current_lang]
       follow_up_msg = (current_lang == 'ne') ? "के म तपाईंलाई अरू केही सहयोग गर्न सक्छु?" : "Is there anything else I can help you with?"
 
       <<~XML
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          <Say voice="#{voice_actor}" language="#{LANG_CODES[current_lang]}">#{reply_text}</Say>
-          <Gather input="speech" action="/voice/chat?lang=#{current_lang}" speechTimeout="auto" language="#{LANG_CODES[current_lang]}">
-            <Say voice="#{voice_actor}" language="#{LANG_CODES[current_lang]}">#{follow_up_msg}</Say>
+          <Say voice="#{voice_actor}" language="#{TTS_LANG_CODES[current_lang]}">#{reply_text}</Say>
+          <Gather input="speech" action="/voice/chat?lang=#{current_lang}" speechTimeout="auto" language="#{STT_LANG_CODES[current_lang]}">
+            <Say voice="#{voice_actor}" language="#{TTS_LANG_CODES[current_lang]}">#{follow_up_msg}</Say>
           </Gather>
         </Response>
       XML
