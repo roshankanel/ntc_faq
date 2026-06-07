@@ -15,6 +15,12 @@ class App < Roda
   provider_choice = ENV.fetch('AI_PROVIDER', 'openai').downcase
   api_key         = ENV['AI_API_KEY']
 
+  unless api_key.nil? || api_key.strip.empty?
+    puts "Using #{provider_choice.capitalize} as AI provider with provided API key."
+  else
+    puts "No API key provided. Please set the AI_API_KEY environment variable."
+    exit(1)
+  end
   # 2. Build our interchangeable AI client strategy block
   ai_client = (provider_choice == 'groq') ? GroqService.new(api_key) : OpenaiService.new(api_key)
 
