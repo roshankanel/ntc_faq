@@ -22,7 +22,7 @@ class App < Roda
   
   # 2. Instantiate interchangeable strategy client and inject into ViewModel layer
   ai_client   = GroqService.new(api_key)
-  repository  = Faq.new('ntc_faq.text')
+  repository  = Faq.new('ntc_faq.txt')
   VIEW_MODEL  = VoiceChatProcessor.new(ai_client, repository)
 
   # Standard language code tracking tags supported natively across telephone networks

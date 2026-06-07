@@ -13,7 +13,7 @@ class GroqService < BaseAiService
     # Safely format the question into a standard text line without using rough regex sponges
     clean_question = question.to_s.strip
     
-    uri = URI.parse("https://groq.com")
+    uri = URI.parse("https://api.groq.com/openai/v1/chat/completions")
     
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
