@@ -10,8 +10,8 @@ class GroqService < BaseAiService
   end
 
   def execute_chat(system_prompt, question, context)
-    # Ensure variables are treated as flat text lines to prevent header corruption
-    clean_question = question.to_s.gsub(/[^[:print:]\s]/, '').strip
+    # Safely format the question into a standard text line without using rough regex sponges
+    clean_question = question.to_s.strip
     
     uri = URI.parse("https://groq.com")
     
@@ -37,7 +37,6 @@ class GroqService < BaseAiService
 
     response = http.request(request)
     
-    # Safety Check: If the server returns a blank body or hits an internal error, catch it
     if response.body.nil? || response.body.strip.empty? || response.body.start_with?("<!DOCTYPE html", "<html")
       return "I am sorry, the assistant network pipeline is resetting. Please ask again."
     end
@@ -47,7 +46,7 @@ class GroqService < BaseAiService
     if result["error"]
       "System configuration notice: #{result['error']['message']}"
     else
-      # Extract the clean string and strip out any markdown formatting that breaks text-to-speech
+      # Extract the text and remove markdown characters that confuse speech engines
       raw_content = result.dig("choices", 0, "message", "content").to_s
       raw_content.gsub(/[\*#_`\[\]()]/, '').strip
     end
