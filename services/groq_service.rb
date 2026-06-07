@@ -53,6 +53,12 @@ class GroqService < BaseAiService
     # 6. Parse the JSON package response
     result = JSON.parse(response.body)
     
+    # ---- 📸 THE RAW RESPONSE INSPECTION CAMERA ----
+    puts "\n📦 [RAW CLOUD DATA PACKAGE RECEIVED]:"
+    puts JSON.pretty_generate(result)
+    puts "--------------------------------------------\n\n"
+
+    
     # Extract response or fallback cleanly
     result.dig("choices", 0, "message", "content") || "I am sorry, my system is currently resetting."
   rescue StandardError => e
