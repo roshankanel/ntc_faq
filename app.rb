@@ -1,10 +1,8 @@
 # app.rb
 require 'roda'
-require 'uri'
 
-# Load local architecture modules
-require_relative 'models/faq'
-require_relative 'services/openai_service'
+# Load architecture folders cleanly at startup
+require_relative 'models/faq_repository'
 require_relative 'services/groq_service'
 require_relative 'view_models/voice_chat_processor'
 
@@ -12,96 +10,80 @@ class App < Roda
   plugin :request_headers
   plugin :render
 
+  # 1. Fetch credentials securely from the system profile context
   api_key = ENV['AI_API_KEY']
 
   if api_key.nil? || api_key.strip.empty?
-    puts "制造 ERROR: No API key provided. Please set the AI_API_KEY environment variable."
+    puts "❌ ERROR: No API key provided. Please set the AI_API_KEY environment variable."
     exit(1)
   end 
 
-  puts "🚀 Launching system pipeline dynamically linked to Groq Cloud Platform Engine..."
-  ai_client = GroqService.new(api_key)
-
-  repository  = Faq.new('ntc_faq.text')
+  puts "🚀 Launching framework dynamically linked to Groq Cloud Engine..."
+  
+  # 2. Instantiate interchangeable strategy client and inject into ViewModel layer
+  ai_client   = GroqService.new(api_key)
+  repository  = FaqRepository.new('ntc_faq.text')
   VIEW_MODEL  = VoiceChatProcessor.new(ai_client, repository)
 
-  VOICES = { 'en' => 'Polly.Joanna-Neural', 'ne' => 'Polly.Madhav-Neural' }.freeze
+  # Standard language code tracking tags supported natively across telephone networks
   LANG_CODES = { 'en' => 'en-US', 'ne' => 'ne-NP' }.freeze
 
   route do |r|
+    # Instruct the voice platform network that we are passing standard text XML data blocks
     response['Content-Type'] = 'text/xml'
 
-    # --- JUNCTION 1: The Initial Ring ---
+    # --- JUNCTION 1: The Initial Ring Greeting Menu ---
     r.is "voice" do
       <<~XML
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
           <Gather numDigits="1" action="/voice/menu" timeout="5">
-            <Say voice="Polly.Joanna-Neural">Welcome to Nepal Telecom. For English, press 1.</Say>
-            <Play>https://google.com</Play>
+            <Say voice="Polly.Joanna-Neural" language="en-US">Welcome to Nepal Telecom. For English, press 1.</Say>
+            <Say voice="Polly.Madhav-Neural" language="ne-NP">नेपाल टेलिकममा स्वागत छ। नेपालीको लागि दुई थिच्नुहोस्।</Say>
           </Gather>
           <Redirect>/voice</Redirect>
         </Response>
       XML
     end
 
-    # --- JUNCTION 2: Processing Keypad Entry ---
+    # --- JUNCTION 2: Processing Keypad Selection ---
     r.is "voice/menu" do
       digit_pressed = r.params['Digits']
-      
-      # FIX: Force strict selection criteria to catch Button 1 vs Button 2 cleanly
       selected_lang = (digit_pressed == '2') ? 'ne' : 'en'
+
+      welcome_msg = (selected_lang == 'ne') ? "धन्यवाद। अब तपाईं नेपालीमा प्रश्न सोध्न सक्नुहुन्छ।" : "Thank you. You can now ask your question in English."
+      voice_actor = (selected_lang == 'ne') ? "Polly.Madhav-Neural" : "Polly.Joanna-Neural"
 
       <<~XML
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          #{
-            if selected_lang == 'ne'
-              "<Play>https://google.com</Play>"
-            else
-              "<Say voice=\"Polly.Joanna-Neural\">Thank you. You can now ask your question in English.</Say>"
-            end
-          }
+          <Say voice="#{voice_actor}" language="#{LANG_CODES[selected_lang]}">#{welcome_msg}</Say>
           <Gather input="speech" action="/voice/chat?lang=#{selected_lang}" speechTimeout="auto" language="#{LANG_CODES[selected_lang]}"/>
         </Response>
       XML
     end
 
-    # --- JUNCTION 3: Continuous Voice Chat ---
-       # --- JUNCTION 3: Continuous Voice Chat ---
+    # --- JUNCTION 3: Continuous Intelligent Chat Interaction Loop ---
     r.is "voice/chat" do
       current_lang = r.params['lang'] || 'en'
       customer_speech = r.params['SpeechResult']
 
-      # Query our view-model architecture layer
+      # Query our view-model abstraction architecture layer
       reply_text = VIEW_MODEL.generate_response(customer_speech, current_lang)
+      
+      voice_actor   = (current_lang == 'ne') ? "Polly.Madhav-Neural" : "Polly.Joanna-Neural"
+      follow_up_msg = (current_lang == 'ne') ? "के म तपाईंलाई अरू केही सहयोग गर्न सक्छु?" : "Is there anything else I can help you with?"
 
       <<~XML
         <?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          #{
-            if current_lang == 'ne'
-              encoded_reply = URI.encode_www_form_component(reply_text)
-              nepali_audio_url = "https://google.com{encoded_reply}"
-              "<Play>#{nepali_audio_url}</Play>"
-            else
-              # Clean text-to-speech delivery with zero audio streaming wrapping errors
-              "<Say voice=\"Polly.Joanna-Neural\">#{reply_text}</Say>"
-            end
-          }
+          <Say voice="#{voice_actor}" language="#{LANG_CODES[current_lang]}">#{reply_text}</Say>
           <Gather input="speech" action="/voice/chat?lang=#{current_lang}" speechTimeout="auto" language="#{LANG_CODES[current_lang]}">
-            #{
-              if current_lang == 'ne'
-                "<Play>https://google.com</Play>"
-              else
-                "<Say voice=\"Polly.Joanna-Neural\">Is there anything else I can help you with?</Say>"
-              end
-            }
+            <Say voice="#{voice_actor}" language="#{LANG_CODES[current_lang]}">#{follow_up_msg}</Say>
           </Gather>
         </Response>
       XML
     end
-
 
   end
 end
