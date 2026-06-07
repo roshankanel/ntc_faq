@@ -1,10 +1,10 @@
 # view_models/voice_chat_processor.rb
 require 'logger'
-require_relative '../models/faq_repository'
+require_relative '../models/faq'
 
 class VoiceChatProcessor
   # ---- SOLID FIX: Place the required parameter BEFORE the optional default values ----
-  def initialize(ai_client, repository = FaqRepository.new, log_file = 'chat_history.log')
+  def initialize(ai_client, repository = Faq.new, log_file = 'chat_history.log')
     @repository = repository
     @ai_client = ai_client
     
@@ -29,7 +29,7 @@ class VoiceChatProcessor
 
     # Save the transaction metrics cleanly inside our file
     @logger.info("Voice Chat Transaction\n  -> Lang:     #{lang.upcase}\n  -> Question: \"#{customer_speech.strip}\"\n  -> Answer:   \"#{reply_text.strip}\"\n------------------------------------------------")
-    
+
     reply_text
   end
 
